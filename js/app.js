@@ -39,16 +39,29 @@ function shuffle(array) {
 
 //$(document).getElementByClassName("card").addEventListener("click", openCard);
 
-var clicks = 0, first, second, firstClass, secondClass, stars = 3, moves;
+var clicks = 0, first, second, firstClass, secondClass, stars = 3, moves, timerInitiate = 0, timeOut, wrongMove = 0, userAttempts = 0;
 
-$('.card').click(function(e){
+$('.card').unbind('click').click(function(e){
+    userAttempts++;
+    countMoves();
     if(clicks == 0){
         $(this).css('font-size','33px');
         $(this).css('background-color','#02b3e4');
         first = $(this);
         firstClass = first.children('i').attr('class');
         console.log("first: " + firstClass);
+        timerInitiate++;
         clicks++;
+        if(timerInitiate == 1){
+            timeOut= setTimeout(function(){ alert("Game Over"); resetGame(); }, 120000);
+            setInterval(function() {
+                console.log('Time left: '+getTimeLeft(timeOut)+'s');
+            }, 2000);
+
+            function getTimeLeft(timeout) {
+                return Math.ceil((timeout._idleStart + timeout._idleTimeout - Date.now()) / 1000);
+            }
+        }
         console.log(clicks);
     }
     else{
@@ -58,46 +71,50 @@ $('.card').click(function(e){
         $(this).css('font-size','33px');
         $(this).css('background-color','#02b3e4');
         if(secondClass == firstClass){
-            $(this).css('background-color','#02ccba');
-            first.css('background-color','#02ccba');
-            $(this).addClass('match');
-            first.addClass('match');
+            setTimeout(function(){
+                second.css('background-color','#02ccba');
+                first.css('background-color','#02ccba');
+                second.addClass('match');
+                first.addClass('match');},1000);
+            $(this).off();
+            first.off();
         }
         else{
-            $(this).addClass('unmatch');
-            first.addClass('unmatch');
-            $(this).css('background-color','#2e3d49');
-            first.css('background-color','#2e3d49');
-            $(this).css('font-size','0px');
-            first.css('font-size','0px');
-            $('.stars').children('li').last().remove();
-            stars--;
-            moves = document.getElementById('moves');
-            moves.textContent = stars;
-            console.log(moves.textContent);
+            setTimeout(function(){
+                second.addClass('unmatch');
+                first.addClass('unmatch');
+                second.css('font-size','0px');
+                second.css('background-color','#2e3d49');
+                first.css('background-color','#2e3d49');
+                first.css('font-size','0px');
+                },1000);
+            wrongMove++;
+            if(wrongMove % 4 == 0) {
+                rating();
+            }
             if(stars == 0){
                 window.alert("Game Over");
-                stars = 3;
-                moves = document.getElementById('moves');
-                moves.textContent = stars;
-                var starCount = $('.stars').children('li').length;
-                for(var i = starCount; i < 3; i++){
-                    $('.stars').append('<li><i class="fa fa-star"></i></li>');
-                }
-                $('.card').css('font-size', '0');
-                $('.card').css('background-color','#2e3d49');
-                clicks = 0;
+                resetGame();
             }
         }
         clicks--;
         console.log(clicks);
     }
+    if ($(".deck").children().length == $(".deck").children(".match").length) {
+        clearTimeout(timeOut);
+        setTimeout(function(){alert("Game Won");},1000);
+    }
 });
 
+
 $('.restart').click(function(){
+    resetGame();
+});
+
+function resetGame(){
     stars = 3;
     moves = document.getElementById('moves');
-    moves.textContent = stars;
+    moves.textContent = 0;
     var starCount = $('.stars').children('li').length;
     for(var i = starCount; i < 3; i++){
         $('.stars').append('<li><i class="fa fa-star"></i></li>');
@@ -105,5 +122,16 @@ $('.restart').click(function(){
     $('.card').css('font-size', '0');
     $('.card').css('background-color','#2e3d49');
     clicks = 0;
-});
+    clearTimeout(timeOut);
+}
 
+function rating(){
+    $('.stars').children('li').last().remove();
+    stars--;
+    console.log(moves.textContent);
+}
+
+function countMoves(){
+    moves = document.getElementById('moves');
+    moves.textContent = userAttempts;
+}

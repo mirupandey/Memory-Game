@@ -125,7 +125,10 @@ h1 {
 }
 
 .unmatch{
-    animation: unmatch 5s;
+    transform-style: preserve-3d;
+    transition: all 1s ease-in-out;
+    transform: rotateY(180deg);
+    animation: unmatch;
     /* background-color: '#2e3d49';
     transition: background-color 5s; */
 }
@@ -134,7 +137,7 @@ h1 {
     0% {
         font-size: 33px;
         background: '#02b3e4';
-        transition-delay: background-color 10s;
+        /*transition-delay: background-color 10s;*/
     }
     100% {
         background: '#2e3d49';
