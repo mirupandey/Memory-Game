@@ -39,7 +39,7 @@ function shuffle(array) {
 
 //$(document).getElementByClassName("card").addEventListener("click", openCard);
 
-var clicks = 0, first, second, firstClass, secondClass, stars = 3, moves, timerInitiate = 0, timeOut, wrongMove = 0, userAttempts = 0;
+var clicks = 0, first, second, firstClass, secondClass, stars = 3, moves, wrongMove = 0, userAttempts = 0;
 
 $('.card').unbind('click').click(function(e){
     userAttempts++;
@@ -50,19 +50,9 @@ $('.card').unbind('click').click(function(e){
         first = $(this);
         firstClass = first.children('i').attr('class');
         console.log("first: " + firstClass);
-        timerInitiate++;
         clicks++;
-        if(timerInitiate == 1){
-            timeOut= setTimeout(function(){ alert("Game Over"); resetGame(); }, 120000);
-            setInterval(function() {
-                console.log('Time left: '+getTimeLeft(timeOut)+'s');
-            }, 2000);
-
-            function getTimeLeft(timeout) {
-                return Math.ceil((timeout._idleStart + timeout._idleTimeout - Date.now()) / 1000);
-            }
-        }
         console.log(clicks);
+        first.off();
     }
     else{
         second = $(this);
@@ -97,18 +87,21 @@ $('.card').unbind('click').click(function(e){
                 resetGame();
             }
         }
+        first.on();
         clicks--;
         console.log(clicks);
     }
     if ($(".deck").children().length == $(".deck").children(".match").length) {
-        clearTimeout(timeOut);
-        setTimeout(function(){alert("Game Won");},1000);
+        modal.style.display = "block";
+        alert("Congratulations!!! Game Won!!!");
+        restartGame();
     }
 });
 
 
 $('.restart').click(function(){
     resetGame();
+    restartGame();
 });
 
 function resetGame(){
@@ -122,7 +115,7 @@ function resetGame(){
     $('.card').css('font-size', '0');
     $('.card').css('background-color','#2e3d49');
     clicks = 0;
-    clearTimeout(timeOut);
+    restartGame();
 }
 
 function rating(){
@@ -134,4 +127,42 @@ function rating(){
 function countMoves(){
     moves = document.getElementById('moves');
     moves.textContent = userAttempts;
+}
+
+function startTimer(duration, display) {
+    var timer = duration, minutes, seconds;
+    setInterval(function () {
+        minutes = parseInt(timer / 60, 10)
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+            timer = duration;
+        }
+    }, 1000);
+}
+
+window.onload = restartGame();
+
+function restartGame() {
+    var fiveMinutes = 60 * 5,
+        display = document.querySelector('#time');
+    startTimer(fiveMinutes, display);
+};
+
+var modal = document.getElementById('myModal');
+var close = document.getElementsByClassName("close")[0];
+
+close.onclick = function() {
+    modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
 }
