@@ -39,9 +39,13 @@ function shuffle(array) {
 
 //$(document).getElementByClassName("card").addEventListener("click", openCard);
 
-var clicks = 0, first, second, firstClass, secondClass, stars = 3, moves, wrongMove = 0, userAttempts = 0;
+var clicks = 0, first, second, timer, firstClass, secondClass, stars = 3, moves, wrongMove = 0, userAttempts = 0, movesMade, timeStarted = false;
 
 $('.card').unbind('click').click(function(e){
+    if(!timeStarted){
+        timeStarted = true;
+        startTimer();
+    }
     userAttempts++;
     countMoves();
     if(clicks == 0){
@@ -92,22 +96,23 @@ $('.card').unbind('click').click(function(e){
         console.log(clicks);
     }
     if ($(".deck").children().length == $(".deck").children(".match").length) {
-        modal.style.display = "block";
-        alert("Congratulations!!! Game Won!!!");
+        $('.modal-title').text("You Win! Keep Practicing!");
+        $('.stats').text(`You got ${stars} star(s) with ${moves} moves, after ${current_time_played}`);
+        $('#myModal').modal('show');
         restartGame();
     }
 });
 
 
-$('.restart').click(function(){
+$('.reset').click(function(){
     resetGame();
-    restartGame();
 });
 
 function resetGame(){
     stars = 3;
     moves = document.getElementById('moves');
-    moves.textContent = 0;
+    userAttempts = 0;
+    moves.textContent = userAttempts;
     var starCount = $('.stars').children('li').length;
     for(var i = starCount; i < 3; i++){
         $('.stars').append('<li><i class="fa fa-star"></i></li>');
@@ -115,7 +120,7 @@ function resetGame(){
     $('.card').css('font-size', '0');
     $('.card').css('background-color','#2e3d49');
     clicks = 0;
-    restartGame();
+    timeStarted = false;
 }
 
 function rating(){
@@ -129,40 +134,47 @@ function countMoves(){
     moves.textContent = userAttempts;
 }
 
-function startTimer(duration, display) {
-    var timer = duration, minutes, seconds;
-    setInterval(function () {
-        minutes = parseInt(timer / 60, 10)
-        seconds = parseInt(timer % 60, 10);
+function startTimer() {
+    const game_start_time = new Date().getTime(); //get the current time when user clicked the first card
+    const time_limit = new Date(game_start_time + 5 * 60000);
+    let timer = setInterval(function () {
 
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
+        const current_time = new Date().getTime();
+        let current_time_played = current_time - game_start_time; //calculate time elapsed
+        let time_left = time_limit - current_time_played; //calculate the time left in game completion
+        let hrs = Math.floor((current_time_played % (1000 *60 * 60 * 24)) / (1000 * 60 *60));
+        let mins = Math.floor((current_time_played % (1000 * 60 * 60)) / (1000 * 60));
+        let secs = Math.floor((current_time_played % (1000 * 60)) / 1000);
 
-        display.textContent = minutes + ":" + seconds;
+        let left_hrs = Math.floor((time_left % (1000 *60 * 60 * 24)) / (1000 * 60 *60));
+        let left_mins = Math.floor((time_left % (1000 * 60 * 60)) / (1000 * 60));
+        let left_secs = Math.floor((time_left % (1000 * 60)) / 1000);
 
-        if (--timer < 0) {
-            timer = duration;
+        let time_value = mins + ' mins' + secs + ' secs'; // this is to display in the stats modal
+
+        if(left_secs === 0) {
+            $('.modal-title').text('Game Over');
+            $('.stats').text('You Loose! Try Harder');
+            $('#myModal').modal('show');
+            clearInterval(timer);
         }
-    }, 1000);
+
+        current_time_played = mins + ':' + secs;
+        time_left = left_mins + ':' + left_secs;
+        $(".time-played").text(current_time_played); 
+        $('#time').text(time_left);   
+    });
 }
 
 window.onload = restartGame();
 
 function restartGame() {
-    var fiveMinutes = 60 * 5,
-        display = document.querySelector('#time');
-    startTimer(fiveMinutes, display);
+    resetGame();
 };
 
 var modal = document.getElementById('myModal');
 var close = document.getElementsByClassName("close")[0];
 
 close.onclick = function() {
-    modal.style.display = "none";
-}
-
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
+    $('#myModal').modal('hide');
 }
