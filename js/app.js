@@ -39,12 +39,12 @@ function shuffle(array) {
 
 //$(document).getElementByClassName("card").addEventListener("click", openCard);
 
-var clicks = 0, first, second, timer, firstClass, secondClass, stars = 3, moves, wrongMove = 0, userAttempts = 0, movesMade, timeStarted = false;
+var clicks = 0, first, second, timer, firstClass, secondClass, theTime, stars = 3, moves, wrongMove = 0, userAttempts = 0, movesMade, timeStarted = false;
 
 $('.card').unbind('click').click(function(e){
     if(!timeStarted){
         timeStarted = true;
-        startTimer();
+        startTimer(); // called when timeStarted value is false
     }
     userAttempts++;
     countMoves();
@@ -52,11 +52,11 @@ $('.card').unbind('click').click(function(e){
         $(this).css('font-size','33px');
         $(this).css('background-color','#02b3e4');
         first = $(this);
+        first.attr('disabled','disabled');
         firstClass = first.children('i').attr('class');
         console.log("first: " + firstClass);
         clicks++;
         console.log(clicks);
-        first.off();
     }
     else{
         second = $(this);
@@ -69,14 +69,24 @@ $('.card').unbind('click').click(function(e){
                 second.css('background-color','#02ccba');
                 first.css('background-color','#02ccba');
                 second.addClass('match');
-                first.addClass('match');},1000);
-            $(this).off();
-            first.off();
+                first.addClass('match');});
+            $(this).attr('disabled','disabled');
+            /*var list = document.getElementsByClassName("match").length;
+            console.log(list.length);*/
+            console.log(document.querySelectorAll('.match').length);
+            if (document.querySelectorAll('.match').length === 14) {
+                console.log("done");
+                $('#t').html("00:05:00");
+                $('.modal-body').text('You got ' + stars +' star(s) with ' + userAttempts + ' moves and still ' + theTime + ' time remaining.');
+                $('.modal-title').text("You Win! Keep Practicing!");
+                $('#myModal').modal('show');
+                restartGame();
+            }
         }
         else{
+            first.removeAttr('disabled');
             setTimeout(function(){
-                second.addClass('unmatch');
-                first.addClass('unmatch');
+                
                 second.css('font-size','0px');
                 second.css('background-color','#2e3d49');
                 first.css('background-color','#2e3d49');
@@ -87,19 +97,16 @@ $('.card').unbind('click').click(function(e){
                 rating();
             }
             if(stars == 0){
-                window.alert("Game Over");
+                $('.modal-title').text("You Loose!");
+                $('#myModal').modal('show');
+                $('#t').html("00:05:00");
                 resetGame();
             }
+        
         }
-        first.on();
+        
         clicks--;
         console.log(clicks);
-    }
-    if ($(".deck").children().length == $(".deck").children(".match").length) {
-        $('.modal-title').text("You Win! Keep Practicing!");
-        $('.stats').text(`You got ${stars} star(s) with ${moves} moves, after ${current_time_played}`);
-        $('#myModal').modal('show');
-        restartGame();
     }
 });
 
@@ -121,6 +128,7 @@ function resetGame(){
     $('.card').css('background-color','#2e3d49');
     clicks = 0;
     timeStarted = false;
+    $('li[class^="cards"]').on();
 }
 
 function rating(){
@@ -134,36 +142,30 @@ function countMoves(){
     moves.textContent = userAttempts;
 }
 
-function startTimer() {
-    const game_start_time = new Date().getTime(); //get the current time when user clicked the first card
-    const time_limit = new Date(game_start_time + 5 * 60000);
-    let timer = setInterval(function () {
-
-        const current_time = new Date().getTime();
-        let current_time_played = current_time - game_start_time; //calculate time elapsed
-        let time_left = time_limit - current_time_played; //calculate the time left in game completion
-        let hrs = Math.floor((current_time_played % (1000 *60 * 60 * 24)) / (1000 * 60 *60));
-        let mins = Math.floor((current_time_played % (1000 * 60 * 60)) / (1000 * 60));
-        let secs = Math.floor((current_time_played % (1000 * 60)) / 1000);
-
-        let left_hrs = Math.floor((time_left % (1000 *60 * 60 * 24)) / (1000 * 60 *60));
-        let left_mins = Math.floor((time_left % (1000 * 60 * 60)) / (1000 * 60));
-        let left_secs = Math.floor((time_left % (1000 * 60)) / 1000);
-
-        let time_value = mins + ' mins' + secs + ' secs'; // this is to display in the stats modal
-
-        if(left_secs === 0) {
-            $('.modal-title').text('Game Over');
-            $('.stats').text('You Loose! Try Harder');
+function startTimer() { // startTimer function
+    
+        var timer = new Timer();
+        timer.start({countdown: true, startValues: {minutes: 5}});
+        $('#t').html(timer.getTimeValues().toString());
+        timer.addEventListener('secondsUpdated', function (e) {
+            $('#t').html(timer.getTimeValues().toString());
+            theTime = timer.getTimeValues().toString();
+        });
+        timer.addEventListener('targetAchieved', function (e) {
+            $('.modal-title').text("You Loose!");
             $('#myModal').modal('show');
-            clearInterval(timer);
-        }
-
-        current_time_played = mins + ':' + secs;
-        time_left = left_mins + ':' + left_secs;
-        $(".time-played").text(current_time_played); 
-        $('#time').text(time_left);   
-    });
+            resetGame();
+        });
+        $('#continue').click(function() {
+            timer.stop();
+            $('#t').html("00:05:00");
+            resetGame();
+        });
+        $('.reset').click(function() {
+            timer.stop();
+            $('#t').html("00:05:00");
+            resetGame();
+        });
 }
 
 window.onload = restartGame();
