@@ -46,7 +46,6 @@ $('.card').unbind('click').click(function(e){
         timeStarted = true;
         startTimer(); // called when timeStarted value is false
     }
-    userAttempts++;
     countMoves();
     if(clicks == 0 && ($(this).is('[disabled=disabled]')) === false){
         $(this).css('font-size','33px');
@@ -57,6 +56,7 @@ $('.card').unbind('click').click(function(e){
         console.log("first: " + firstClass);
         clicks++;
         console.log(clicks);
+        userAttempts++;
     }
     else if(($(this).is('[disabled=disabled]')) === false) {
         second = $(this);
@@ -64,6 +64,7 @@ $('.card').unbind('click').click(function(e){
         console.log("second: " + secondClass);
         $(this).css('font-size','33px');
         $(this).css('background-color','#02b3e4');
+
         if(secondClass == firstClass){
             setTimeout(function(){
                 second.css('background-color','#02ccba');
