@@ -48,7 +48,7 @@ $('.card').unbind('click').click(function(e){
     }
     userAttempts++;
     countMoves();
-    if(clicks == 0){
+    if(clicks == 0 && ($(this).is('[disabled=disabled]')) === false){
         $(this).css('font-size','33px');
         $(this).css('background-color','#02b3e4');
         first = $(this);
@@ -58,7 +58,7 @@ $('.card').unbind('click').click(function(e){
         clicks++;
         console.log(clicks);
     }
-    else{
+    else if(($(this).is('[disabled=disabled]')) === false) {
         second = $(this);
         secondClass = second.children('i').attr('class');
         console.log("second: " + secondClass);
